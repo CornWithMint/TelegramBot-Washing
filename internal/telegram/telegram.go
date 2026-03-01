@@ -10,7 +10,8 @@ import (
 func StartBot(token string, ctx context.Context) {
 
 	opts := []bot.Option{
-		bot.WithDefaultHandler(handler),
+		bot.WithMessageTextHandler("/start", bot.MatchTypeExact, Starthandler),
+		bot.WithMessageTextHandler("/menu", bot.MatchTypeExact, Starthandler),
 	}
 
 	b, err := bot.New(token, opts...)

@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/CornWithMint/TelegramBot-Washing/internal/config"
+	"github.com/CornWithMint/TelegramBot-Washing/config"
 	"github.com/CornWithMint/TelegramBot-Washing/internal/telegram"
 
 	"github.com/joho/godotenv"
