@@ -7,17 +7,10 @@ import (
 	"os/signal"
 
 	"github.com/CornWithMint/TelegramBot-Washing/internal/config"
-	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
+	"github.com/CornWithMint/TelegramBot-Washing/internal/telegram"
+
 	"github.com/joho/godotenv"
 )
-
-func handler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	b.SendMessage(context.Background(), &bot.SendMessageParams{
-		ChatID: update.Message.Chat.ID,
-		Text:   update.Message.Text,
-	})
-}
 
 func main() {
 	// Контекст для graseful shotdown бота после interrupt
@@ -34,13 +27,6 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	opts := []bot.Option{
-		bot.WithDefaultHandler(handler),
-	}
-
-	b, err := bot.New(cfg.BotToken, opts...)
-	if err != nil {
-		log.Fatal("Ошибка создания бота")
-	}
-	b.Start(ctx)
+	//Запускаем бота
+	telegram.StartBot(cfg.BotToken, ctx)
 }
