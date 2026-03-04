@@ -2,11 +2,15 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"os"
 	"os/signal"
 
+	_ "github.com/mattn/go-sqlite3"
+
 	"github.com/CornWithMint/TelegramBot-Washing/config"
+	"github.com/CornWithMint/TelegramBot-Washing/internal/database"
 	"github.com/CornWithMint/TelegramBot-Washing/internal/telegram"
 
 	"github.com/joho/godotenv"
@@ -27,6 +31,16 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
+	// Открываем базу данных
+	db, err := sql.Open("sqlite3", cfg.BdPath)
+	if err != nil {
+		log.Fatal("Ошибка открытия бд", err)
+	}
+	database.CreateTable(db)
+	database.ReadValues(0, db)
+
+	defer db.Close()
 	//Запускаем бота
 	telegram.StartBot(cfg.BotToken, ctx)
+
 }
