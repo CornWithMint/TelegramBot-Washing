@@ -7,14 +7,32 @@ import (
 	"github.com/go-telegram/bot/models"
 )
 
-func Starthandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	b.SendMessage(ctx, &bot.SendMessageParams{
+func (b *Bot) Starthandler(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
+	BotApi.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: update.Message.Chat.ID,
 		Text:   "Добро пожаловать в бота который умеет считать сколько дней не стирались вещи. Введи \n /GetClothes - Чтобы посмотреть весь список вещей \n /WashedClothes - чтобы выбрать постиранные вещи \n /AddClothes - Чтобы ввести список вещей или добавить новую вещь",
 	})
 }
 
-func GetMessageHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+// func WashedClothesHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
+// 	inlinebuton := inline.New(b).
+// 		Row().
+// 		Button("Белые", []byte("1-1")).
+// 		Row().
+// 		Button("Черные", []byte("2-1")).
+// 		Row().
+// 		Button("Цветные", []byte("3-1")).
+// 		Row().
+// 		Button("Все", []byte("4-1"))
+
+// 	b.SendMessage(ctx, &bot.SendMessageParams{
+// 		ChatID:      update.Message.Chat.ID,
+// 		Text:        "Нажмите кнопку с цветом выбраных вещей или нажмите все вещи, чтобы выбрать самрому: ",
+// 		ReplyMarkup: inlinebuton,
+// 	})
+// }
+
+func (b *Bot) GetMessageHandler(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
 	if update.Message == nil {
 		return
 	}
@@ -23,27 +41,30 @@ func GetMessageHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
 
 	switch text {
 	case "/GetClothes":
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		BotApi.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
 			Text:   "Вот список вещей: ",
 		})
-	case "/WashedClothes":
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		BotApi.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
-			Text:   "Нажмите кнопку с цветом выбраных вещей или нажмите все вещи, чтобы выбрать самрому: ",
+			Text:   "Вот",
 		})
 	case "/AddClothes":
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		BotApi.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
 			Text:   "Введите список вещей которые хотите добавить в виде вещь-цвет-количество через запятую",
 		})
+		if update.Message.Text != "" {
+
+		}
+
 	case "/menu":
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		BotApi.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: update.Message.Chat.ID,
 			Text:   "Добро пожаловать в бота который умеет считать сколько дней не стирались вещи. Введи \n /GetClothes - Чтобы посмотреть весь список вещей \n /WashedClothes - чтобы выбрать постиранные вещи \n /AddClothes - Чтобы ввести список вещей или добавить новую вещь",
 		})
 	default:
-		b.SendMessage(ctx, &bot.SendMessageParams{
+		BotApi.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
 			Text:   "Такой комманды нет",
 		})

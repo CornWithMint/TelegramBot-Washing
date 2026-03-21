@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/CornWithMint/TelegramBot-Washing/config"
 	"github.com/CornWithMint/TelegramBot-Washing/internal/database"
+	"github.com/CornWithMint/TelegramBot-Washing/internal/entity"
 	"github.com/CornWithMint/TelegramBot-Washing/internal/telegram"
 
 	"github.com/joho/godotenv"
@@ -21,6 +22,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
 
+	//Загрузка env файла
 	if err := godotenv.Load(".env"); err != nil {
 		log.Println("No .env file found, using system environment")
 	}
@@ -31,16 +33,31 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Открываем базу данных
-	db, err := sql.Open("sqlite3", cfg.BdPath)
+	//Открываем файл для логгов
+	file, err := os.OpenFile(cfg.LogPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		log.Fatal("Ошибка открытия бд", err)
+		log.Fatal("Не удалось загрузить файл для логирования", err)
 	}
-	database.CreateTable(db)
-	database.ReadValues(0, db)
+	log.SetOutput(file)
 
-	defer db.Close()
+	db, err := database.NewSqliteRepo(cfg)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("dad")
 	//Запускаем бота
-	telegram.StartBot(cfg.BotToken, ctx)
+	bot, err := telegram.NewBot(cfg, db)
+	if err != nil {
+		log.Fatalf("Failed to create bot: %v", err)
+	}
+	bot.Start(ctx)
+
+	Users := &[]entity.User{
+		{Id: 0, Thing: "Jeans", Color: "Black", Number: 1},
+	}
+	for _, user := range *Users {
+		db.UpdateTable(&user)
+	}
 
 }
