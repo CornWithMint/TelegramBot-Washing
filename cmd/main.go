@@ -11,7 +11,6 @@ import (
 
 	"github.com/CornWithMint/TelegramBot-Washing/config"
 	"github.com/CornWithMint/TelegramBot-Washing/internal/database"
-	"github.com/CornWithMint/TelegramBot-Washing/internal/entity"
 	"github.com/CornWithMint/TelegramBot-Washing/internal/telegram"
 
 	"github.com/joho/godotenv"
@@ -46,18 +45,19 @@ func main() {
 	}
 
 	fmt.Println("dad")
+
+	// Users := &[]entity.User{
+	// 	{Id: 0, Thing: "Jeans", Color: "Black", Number: 1},
+	// }
+	// for _, user := range *Users {
+	// 	db.UpdateTable(&user)
+	// }
+	fmt.Println("Das")
+
 	//Запускаем бота
 	bot, err := telegram.NewBot(cfg, db)
 	if err != nil {
 		log.Fatalf("Failed to create bot: %v", err)
 	}
 	bot.Start(ctx)
-
-	Users := &[]entity.User{
-		{Id: 0, Thing: "Jeans", Color: "Black", Number: 1},
-	}
-	for _, user := range *Users {
-		db.UpdateTable(&user)
-	}
-
 }

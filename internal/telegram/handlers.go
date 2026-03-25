@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 
+	"github.com/CornWithMint/TelegramBot-Washing/internal/entity"
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 )
@@ -41,14 +42,17 @@ func (b *Bot) GetMessageHandler(ctx context.Context, BotApi *bot.Bot, update *mo
 
 	switch text {
 	case "/GetClothes":
+		NewText := entity.UsersArrToString(b.repo.ReadValues(0))
+
 		BotApi.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
 			Text:   "Вот список вещей: ",
 		})
 		BotApi.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
-			Text:   "Вот",
+			Text:   NewText,
 		})
+		b.repo.ReadValues(chatid)
 	case "/AddClothes":
 		BotApi.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,

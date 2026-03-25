@@ -14,8 +14,8 @@ import (
 )
 
 type Repository interface {
-	UpdateTable(u *entity.User)
-	ReadValues(id int)
+	UpdateTable(u *entity.User, id int)
+	ReadValues(id int64) []entity.User
 	DeleteValues()
 }
 
@@ -58,7 +58,6 @@ func Format(clothes string, id int) ([]entity.User, error) {
 		num, _ := strconv.Atoi(res[i][2])
 
 		u := &entity.User{
-			Id:     id,
 			Thing:  res[i][0],
 			Color:  res[i][1],
 			Number: num,

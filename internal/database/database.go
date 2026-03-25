@@ -26,7 +26,6 @@ func NewSqliteRepo(cfg *config.Config) (*SqliteRepo, error) {
 	repo := &SqliteRepo{db: db}
 	repo.CreateTable()
 
-	defer db.Close()
 	return repo, nil
 }
 
@@ -45,22 +44,25 @@ func (r *SqliteRepo) CreateTable() {
 	fmt.Println("Таблица создана")
 }
 
-func (r *SqliteRepo) UpdateTable(u *entity.User) {
+func (r *SqliteRepo) UpdateTable(u *entity.User, id int) {
 	insert := `INSERT INTO Clothes (User_id, Thing, Color, Number) VALUES (?, ?, ?, ?)`
-	_, err := r.db.Exec(insert, u.Id, u.Thing, u.Color, u.Number)
+	_, err := r.db.Exec(insert, id, u.Thing, u.Color, u.Number)
 	if err != nil {
 		log.Fatal("Ошибка вставки данных", err)
 	}
 	fmt.Printf("Вставлено %s с цветом %s \n", u.Thing, u.Color)
 }
 
-func (r *SqliteRepo) ReadValues(id int) {
+func (r *SqliteRepo) ReadValues(id int64) []entity.User {
 	get := `SELECT * FROM Clothes WHERE User_id = ?`
 	rows, err := r.db.Query(get, id)
 	if err != nil {
 		log.Fatal("", err)
 	}
+
 	defer rows.Close()
+
+	res := make([]entity.User, 0)
 
 	for rows.Next() {
 		var number, id int
@@ -69,9 +71,11 @@ func (r *SqliteRepo) ReadValues(id int) {
 		if err != nil {
 			log.Fatal("Ошибка сканирования строки:", err)
 		}
-
+		res = append(res, entity.User{Thing: thing, Color: color, Number: number})
 		fmt.Printf("В БД Вещь: %s, Цвет: %s, Количество: %d\n", thing, color, number)
+
 	}
+	return res
 }
 
 func (r *SqliteRepo) DeleteValues() {
