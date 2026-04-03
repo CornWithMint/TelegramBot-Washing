@@ -44,7 +44,7 @@ func (r *SqliteRepo) CreateTable() {
 	fmt.Println("Таблица создана")
 }
 
-func (r *SqliteRepo) UpdateTable(u *entity.User, id int) {
+func (r *SqliteRepo) UpdateTable(u *entity.User, id int64) {
 	insert := `INSERT INTO Clothes (User_id, Thing, Color, Number) VALUES (?, ?, ?, ?)`
 	_, err := r.db.Exec(insert, id, u.Thing, u.Color, u.Number)
 	if err != nil {

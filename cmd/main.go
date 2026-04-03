@@ -39,12 +39,12 @@ func main() {
 	}
 	log.SetOutput(file)
 
+	//Создаем, открываем БД
 	db, err := database.NewSqliteRepo(cfg)
 	if err != nil {
+		log.Fatal("Не удалось создать репозиторий", err)
 		fmt.Println(err)
 	}
-
-	fmt.Println("dad")
 
 	// Users := &[]entity.User{
 	// 	{Id: 0, Thing: "Jeans", Color: "Black", Number: 1},
@@ -52,10 +52,9 @@ func main() {
 	// for _, user := range *Users {
 	// 	db.UpdateTable(&user)
 	// }
-	fmt.Println("Das")
 
 	//Запускаем бота
-	bot, err := telegram.NewBot(cfg, db)
+	bot, err := telegram.NewBot(ctx, cfg, db)
 	if err != nil {
 		log.Fatalf("Failed to create bot: %v", err)
 	}
