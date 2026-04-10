@@ -40,6 +40,7 @@ func (r *SqliteRepo) CreateTable() {
 		Thing TEXT ,
 		Color TEXT,
 		Number INTEGER,
+		Days  INTEGER,
 		UNIQUE(Thing, Color, Number)
 	)`
 	_, err := r.db.Exec(create)

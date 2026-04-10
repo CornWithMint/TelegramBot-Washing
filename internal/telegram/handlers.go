@@ -59,41 +59,36 @@ func (b *Bot) Handlers() {
 		fsm.WithStates(stateDefault),
 	)
 
-	b.api.RegisterHandler(bot.HandlerTypeCallbackQueryData, "button", bot.MatchTypePrefix,
+	b.api.RegisterHandler(bot.HandlerTypeCallbackQueryData, "", bot.MatchTypePrefix,
 		func(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
+			slog.Debug("Функция обрабатывающая кнопки начала работать")
 
-			chatid := update.Message.Chat.ID
-			data := update.CallbackQuery.Data
-
+			callback := update.CallbackQuery
+			if callback == nil {
+				slog.Debug("CallBack нулевой")
+				return
+			}
 			f := fsm.FromContext(ctx)
 			f.Transition(ctx, stateClothes)
 
+			data := callback.Data
+			chatid := callback.From.ID
+
 			switch data {
 			case "button_1":
-				b.api.SendMessage(ctx, &bot.SendMessageParams{
-					ChatID: chatid,
-					Text:   "Черный мальчик",
-				})
+				slog.Debug("Кнопка")
+				b.ColorSelectionHandler(ctx, BotApi, chatid, "black")
 			case "button_2":
-				b.api.SendMessage(ctx, &bot.SendMessageParams{
-					ChatID: chatid,
-					Text:   "Белый мальчик",
-				})
+				b.ColorSelectionHandler(ctx, BotApi, chatid, "black")
 			case "button_3":
-				b.api.SendMessage(ctx, &bot.SendMessageParams{
-					ChatID: chatid,
-					Text:   "Цветной мальчик",
-				})
+				b.ColorSelectionHandler(ctx, BotApi, chatid, "black")
 			case "button_4":
-				b.api.SendMessage(ctx, &bot.SendMessageParams{
-					ChatID: chatid,
-					Text:   "Все мальчики",
-				})
+				b.ColorSelectionHandler(ctx, BotApi, chatid, "black")
 			}
 
 			BotApi.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
 				CallbackQueryID: update.CallbackQuery.ID,
-				// Text: "Обрабатываю...", // Необязательное всплывающее уведомление
+				Text:            "Обрабатываю...", // Необязательное всплывающее уведомление
 			})
 		},
 		fsm.WithStates(stateColor),
@@ -162,4 +157,32 @@ func (b *Bot) DefaultHandler(ctx context.Context, BotApi *bot.Bot, update *model
 	BotApi.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatid,
 		Text:   "Такой комманды нет"})
+}
+
+// func (b *Bot) CallBachHandler(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
+// 	slog.Debug("Функция обрабатывающая кнопки начала работать")
+
+// 	chatid := update.Message.Chat.ID
+// 	data := update.CallbackQuery.Data
+
+// 	f := fsm.FromContext(ctx)
+
+// 	switch data {
+// 	case "button_1":
+// 		b.ColorSelectionHandler(ctx, BotApi, chatid)
+// 	case "button_2":
+
+// 	case "button_3":
+
+// 	case "button_4":
+
+// 	}
+
+// 	BotApi.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+// 		CallbackQueryID: update.CallbackQuery.ID,
+// 		Text:            "Обрабатываю...", // Необязательное всплывающее уведомление
+// 	})
+// }
+
+func (b *Bot) ColorSelectionHandler(ctx context.Context, BotApi *bot.Bot, chatid int64, color string) {
 }

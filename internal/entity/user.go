@@ -13,12 +13,13 @@ type User struct {
 	Thing  string
 	Color  string
 	Number int
+	Days   int
 }
 
 func UsersArrToString(users []User) string {
 	var sb strings.Builder
 	for _, u := range users {
-		sb.WriteString(fmt.Sprintf("Thing: %s, Color: %s, Количество: %d\n", u.Thing, u.Color, u.Number))
+		sb.WriteString(fmt.Sprintf("%s %s %d шт, Дней со стирки %d\n", u.Thing, u.Color, u.Number, u.Days))
 	}
 	res := sb.String()
 	return res
@@ -44,6 +45,7 @@ func StringToUserArr(clothes string, id int64) ([]User, error) {
 			Thing:  res[i][0],
 			Color:  res[i][1],
 			Number: num,
+			Days:   0,
 		}
 		things = append(things, *u)
 
