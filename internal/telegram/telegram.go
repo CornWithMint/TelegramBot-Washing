@@ -2,8 +2,8 @@ package telegram
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"log/slog"
+	"os"
 	"time"
 
 	"github.com/CornWithMint/TelegramBot-Washing/config"
@@ -27,9 +27,11 @@ const (
 	stateDefault     fsm.StateFSM = "default"
 	stateWaitMessage fsm.StateFSM = "wait_message"
 	stateColor       fsm.StateFSM = "wait_color"
+	stateClothes     fsm.StateFSM = "wait_clothes"
 )
 
 func NewBot(ctx context.Context, cfg *config.Config, repo Repository) (*Bot, error) {
+	slog.Debug("Запуск функции NewBot")
 
 	mybot := &Bot{repo: repo}
 
@@ -42,24 +44,25 @@ func NewBot(ctx context.Context, cfg *config.Config, repo Repository) (*Bot, err
 		bot.WithMessageTextHandler("/start", bot.MatchTypeExact, mybot.StartHandler),
 		bot.WithMessageTextHandler("/menu", bot.MatchTypeExact, mybot.MenuHandler),
 		bot.WithMessageTextHandler("/GetClothes", bot.MatchTypeExact, mybot.GetClothesHandler),
-		bot.WithCallbackQueryDataHandler("button", bot.MatchTypePrefix, callbackHandler),
+		//bot.WithCallbackQueryDataHandler("button", bot.MatchTypePrefix, callbackHandler),
 		//bot.WithDefaultHandler(mybot.Defaulthandler),
 		bot.WithMiddlewares(fsm.Middleware(machine)),
 	}
 
 	b, err := bot.New(cfg.BotToken, opts...)
 	if err != nil {
-		log.Fatal("Ошибка создания бота: ", err)
+		slog.Error("Ошибка создания бота", "error", err)
+		os.Exit(1)
 	}
 
 	mybot.api = b
 
 	mybot.Handlers()
 
+	slog.Debug("завершение функции NewBot")
 	return mybot, nil
 }
 
 func (b *Bot) Start(ctx context.Context) {
 	b.api.Start(ctx)
-	fmt.Println("Бот запущен")
 }

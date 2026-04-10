@@ -2,10 +2,10 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
+	"syscall"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -17,46 +17,44 @@ import (
 )
 
 func main() {
+	//Создаем логи
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     slog.LevelInfo,
+		AddSource: true,
+	}))
+	slog.SetDefault(logger)
+
 	// Контекст для graseful shotdown бота после interrupt
-	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+	slog.Info("Создание контекста")
+	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT)
 	defer cancel()
 
 	//Загрузка env файла
+	slog.Info("Запуск env файла")
+
 	if err := godotenv.Load(".env"); err != nil {
-		log.Println("No .env file found, using system environment")
+		slog.Error("Ошибка открытия .env файла", "error", err)
 	}
 
 	// Загружаем конфиг
+	slog.Info("Загрузка конфига")
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		slog.Error("Ошибка загрузки конфига", "error", err)
+		os.Exit(1)
 	}
 
-	//Открываем файл для логгов
-	file, err := os.OpenFile(cfg.LogPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal("Не удалось загрузить файл для логирования", err)
-	}
-	log.SetOutput(file)
-
-	//Создаем, открываем БД
-	db, err := database.NewSqliteRepo(cfg)
-	if err != nil {
-		log.Fatal("Не удалось создать репозиторий", err)
-		fmt.Println(err)
-	}
-
-	// Users := &[]entity.User{
-	// 	{Id: 0, Thing: "Jeans", Color: "Black", Number: 1},
-	// }
-	// for _, user := range *Users {
-	// 	db.UpdateTable(&user)
-	// }
+	//Запуск БД
+	slog.Info("Загрузка БД")
+	db := database.NewSqliteRepo(cfg)
 
 	//Запускаем бота
+	slog.Info("Запуск бота")
 	bot, err := telegram.NewBot(ctx, cfg, db)
 	if err != nil {
-		log.Fatalf("Failed to create bot: %v", err)
+		slog.Error("Ошибка запуска бота", "error", err)
+		os.Exit(1)
 	}
+	slog.Info("Бот запущен")
 	bot.Start(ctx)
 }

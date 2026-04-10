@@ -3,6 +3,7 @@ package telegram
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/CornWithMint/TelegramBot-Washing/internal/entity"
 	"github.com/go-telegram/bot"
@@ -11,6 +12,7 @@ import (
 )
 
 func (b *Bot) Handlers() {
+	slog.Debug("Запуск функции Handlers")
 	// ADDCLOTHES HANDLER 1
 	b.api.RegisterHandler(bot.HandlerTypeMessageText, "/AddClothes", bot.MatchTypeExact,
 		func(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
@@ -26,7 +28,78 @@ func (b *Bot) Handlers() {
 		fsm.WithStates(stateDefault),
 	)
 
-	// ADDCLOTHES HANDLER 2
+	// WashedClothesHandler 1
+	// Сделать возможность мультивыбора
+	b.api.RegisterHandler(bot.HandlerTypeMessageText, "/WashedClothes", bot.MatchTypeExact,
+		func(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
+			chatid := update.Message.Chat.ID
+
+			f := fsm.FromContext(ctx)
+			f.Transition(ctx, stateColor)
+
+			kb := models.InlineKeyboardMarkup{
+				InlineKeyboard: [][]models.InlineKeyboardButton{
+					{
+						{Text: "Черные", CallbackData: "button_1"},
+						{Text: "Белые", CallbackData: "button_2"},
+					},
+					{
+						{Text: "Цветные", CallbackData: "button_3"},
+						{Text: "Все", CallbackData: "button_4"},
+					},
+				},
+			}
+
+			BotApi.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID:      chatid,
+				Text:        "Выберите каких цветов постирали вещи или все для вывода всех вещей",
+				ReplyMarkup: kb,
+			})
+		},
+		fsm.WithStates(stateDefault),
+	)
+
+	b.api.RegisterHandler(bot.HandlerTypeCallbackQueryData, "button", bot.MatchTypePrefix,
+		func(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
+
+			chatid := update.Message.Chat.ID
+			data := update.CallbackQuery.Data
+
+			f := fsm.FromContext(ctx)
+			f.Transition(ctx, stateClothes)
+
+			switch data {
+			case "button_1":
+				b.api.SendMessage(ctx, &bot.SendMessageParams{
+					ChatID: chatid,
+					Text:   "Черный мальчик",
+				})
+			case "button_2":
+				b.api.SendMessage(ctx, &bot.SendMessageParams{
+					ChatID: chatid,
+					Text:   "Белый мальчик",
+				})
+			case "button_3":
+				b.api.SendMessage(ctx, &bot.SendMessageParams{
+					ChatID: chatid,
+					Text:   "Цветной мальчик",
+				})
+			case "button_4":
+				b.api.SendMessage(ctx, &bot.SendMessageParams{
+					ChatID: chatid,
+					Text:   "Все мальчики",
+				})
+			}
+
+			BotApi.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
+				CallbackQueryID: update.CallbackQuery.ID,
+				// Text: "Обрабатываю...", // Необязательное всплывающее уведомление
+			})
+		},
+		fsm.WithStates(stateColor),
+	)
+
+	//ADDCLOTHES HANDLER 2
 	b.api.RegisterHandler(bot.HandlerTypeMessageText, "", bot.MatchTypePrefix,
 		func(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
 
@@ -54,54 +127,7 @@ func (b *Bot) Handlers() {
 		},
 		fsm.WithStates(stateWaitMessage),
 	)
-
-	// WashedClothesHandler 1
-	b.api.RegisterHandler(bot.HandlerTypeMessageText, "/WashedClothes", bot.MatchTypeExact,
-		func(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
-			fmt.Println("✅ /WashedClothes handler called")
-			chatid := update.Message.Chat.ID
-
-			f := fsm.FromContext(ctx)
-			f.Transition(ctx, stateColor)
-
-			kb := models.InlineKeyboardMarkup{
-				InlineKeyboard: [][]models.InlineKeyboardButton{
-					{
-						{Text: "Черные", CallbackData: "button_1"},
-						{Text: "Белые", CallbackData: "button_2"},
-					},
-					{
-						{Text: "Цветные", CallbackData: "button_3"},
-						{Text: "Все", CallbackData: "button_4"},
-					},
-				},
-			}
-
-			BotApi.SendMessage(ctx, &bot.SendMessageParams{
-				ChatID:      chatid,
-				Text:        "Выберите каких цветов постирали вещи или все для вывода всех вещей",
-				ReplyMarkup: kb,
-			})
-		},
-		fsm.WithStates(fsm.StateAny),
-	)
-
-	// WashedClothesHandler 2
-	// b.api.RegisterHandler(bot.HandlerTypeMessageText, "", bot.MatchTypePrefix,
-	// 	func(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
-	// 		chatid := update.Message.Chat.ID
-
-	// 		f := fsm.FromContext(ctx)
-	// 		f.Transition(ctx, stateColor)
-
-	// 		BotApi.SendMessage(ctx, &bot.SendMessageParams{
-	// 			ChatID: chatid,
-	// 			Text:   "Выберите каких цветов постирали вещи или все для вывода всех вещей",
-	// 		})
-	// 	},
-	// 	fsm.WithStates(stateDefault),
-	// )
-
+	slog.Debug("Завершение функции Handlers")
 }
 
 func (b *Bot) StartHandler(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
@@ -136,15 +162,4 @@ func (b *Bot) DefaultHandler(ctx context.Context, BotApi *bot.Bot, update *model
 	BotApi.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatid,
 		Text:   "Такой комманды нет"})
-}
-
-func callbackHandler(ctx context.Context, b *bot.Bot, update *models.Update) {
-	b.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
-		CallbackQueryID: update.CallbackQuery.ID,
-		ShowAlert:       false,
-	})
-	b.SendMessage(ctx, &bot.SendMessageParams{
-		ChatID: update.CallbackQuery.Message.Message.Chat.ID,
-		Text:   "You selected the button: " + update.CallbackQuery.Data,
-	})
 }

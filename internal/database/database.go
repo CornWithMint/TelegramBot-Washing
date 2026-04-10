@@ -2,8 +2,8 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
-	"log"
+	"log/slog"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 
@@ -16,20 +16,25 @@ type SqliteRepo struct {
 	db *sql.DB
 }
 
-func NewSqliteRepo(cfg *config.Config) (*SqliteRepo, error) {
+func NewSqliteRepo(cfg *config.Config) *SqliteRepo {
+	slog.Debug("Запуск функции NewSqliteRepo")
+
 	db, err := sql.Open("sqlite3", cfg.BdPath)
 	if err != nil {
-		return nil, fmt.Errorf("Ошибка открытия бд", err)
-
+		slog.Error("Ошибка открытия БД", "error", err)
+		os.Exit(1)
 	}
 
 	repo := &SqliteRepo{db: db}
 	repo.CreateTable()
 
-	return repo, nil
+	slog.Debug("Завершение функции NewSqliteRepo")
+	return repo
 }
 
 func (r *SqliteRepo) CreateTable() {
+	slog.Debug("Запуск функции CreateTable")
+
 	create := `CREATE TABLE IF NOT EXISTS Clothes (
 		User_id INTEGER NOT NULL,
 		Thing TEXT ,
@@ -39,25 +44,31 @@ func (r *SqliteRepo) CreateTable() {
 	)`
 	_, err := r.db.Exec(create)
 	if err != nil {
-		log.Fatal("Ошибка создания бд", err)
+		slog.Error("Ошибка создания таблицы", "error", err)
+		os.Exit(1)
 	}
-	fmt.Println("Таблица создана")
+	slog.Debug("Завершение функции CreateTable")
 }
 
 func (r *SqliteRepo) UpdateTable(u *entity.User, id int64) {
+	slog.Debug("Запуск функции UpdateTable")
+
 	insert := `INSERT INTO Clothes (User_id, Thing, Color, Number) VALUES (?, ?, ?, ?)`
 	_, err := r.db.Exec(insert, id, u.Thing, u.Color, u.Number)
 	if err != nil {
-		log.Fatal("Ошибка вставки данных", err)
+		slog.Warn("Не удалось вставить данные в таблицу", "warn", err)
 	}
-	fmt.Printf("Вставлено %s с цветом %s \n", u.Thing, u.Color)
+	//fmt.Printf("Вставлено %s с цветом %s \n", u.Thing, u.Color)
+	slog.Debug("Завершение функции UpdateTable")
 }
 
 func (r *SqliteRepo) ReadValues(id int64) []entity.User {
+	slog.Debug("Запуск функции ReadValues")
+
 	get := `SELECT * FROM Clothes WHERE User_id = ?`
 	rows, err := r.db.Query(get, id)
 	if err != nil {
-		log.Fatal("", err)
+		slog.Warn("Не удалось", "warn", err)
 	}
 
 	defer rows.Close()
@@ -69,14 +80,15 @@ func (r *SqliteRepo) ReadValues(id int64) []entity.User {
 		var thing, color string
 		err = rows.Scan(&id, &thing, &color, &number)
 		if err != nil {
-			log.Fatal("Ошибка сканирования строки:", err)
+			slog.Warn("Не удалось прочитать данные", "warn", err)
 		}
 		res = append(res, entity.User{Thing: thing, Color: color, Number: number})
-		fmt.Printf("В БД Вещь: %s, Цвет: %s, Количество: %d\n", thing, color, number)
-
+		//fmt.Printf("В БД Вещь: %s, Цвет: %s, Количество: %d\n", thing, color, number)
 	}
+	slog.Debug("Завершение функции ReadValues")
 	return res
 }
 
 func (r *SqliteRepo) DeleteValues() {
+	slog.Warn("Ничего не реализует")
 }
