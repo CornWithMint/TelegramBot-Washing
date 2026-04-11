@@ -25,6 +25,16 @@ func UsersArrToString(users []User) string {
 	return res
 }
 
+func UsersArrToColor(users []User, color string) []string {
+	res := make([]string, 0)
+	for _, u := range users {
+		if u.Color == color {
+			res = append(res, u.Thing)
+		}
+	}
+	return res
+}
+
 func StringToUserArr(clothes string, id int64) ([]User, error) {
 	var res [][]string
 	var things []User

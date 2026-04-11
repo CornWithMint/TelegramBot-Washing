@@ -25,7 +25,7 @@ func (b *Bot) Handlers() {
 				Text:   "Введите список вещей которые хотите добавить в виде вещь-цвет-количество через запятую",
 			})
 		},
-		fsm.WithStates(stateDefault),
+		fsm.WithStates(fsm.StateAny),
 	)
 
 	// WashedClothesHandler 1
@@ -56,7 +56,7 @@ func (b *Bot) Handlers() {
 				ReplyMarkup: kb,
 			})
 		},
-		fsm.WithStates(stateDefault),
+		fsm.WithStates(fsm.StateAny),
 	)
 
 	b.api.RegisterHandler(bot.HandlerTypeCallbackQueryData, "", bot.MatchTypePrefix,
@@ -79,11 +79,11 @@ func (b *Bot) Handlers() {
 				slog.Debug("Кнопка")
 				b.ColorSelectionHandler(ctx, BotApi, chatid, "black")
 			case "button_2":
-				b.ColorSelectionHandler(ctx, BotApi, chatid, "black")
+				b.ColorSelectionHandler(ctx, BotApi, chatid, "White")
 			case "button_3":
-				b.ColorSelectionHandler(ctx, BotApi, chatid, "black")
+				b.ColorSelectionHandler(ctx, BotApi, chatid, "Colored")
 			case "button_4":
-				b.ColorSelectionHandler(ctx, BotApi, chatid, "black")
+				b.ColorSelectionHandler(ctx, BotApi, chatid, "All")
 			}
 
 			BotApi.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
@@ -159,30 +159,29 @@ func (b *Bot) DefaultHandler(ctx context.Context, BotApi *bot.Bot, update *model
 		Text:   "Такой комманды нет"})
 }
 
-// func (b *Bot) CallBachHandler(ctx context.Context, BotApi *bot.Bot, update *models.Update) {
-// 	slog.Debug("Функция обрабатывающая кнопки начала работать")
-
-// 	chatid := update.Message.Chat.ID
-// 	data := update.CallbackQuery.Data
-
-// 	f := fsm.FromContext(ctx)
-
-// 	switch data {
-// 	case "button_1":
-// 		b.ColorSelectionHandler(ctx, BotApi, chatid)
-// 	case "button_2":
-
-// 	case "button_3":
-
-// 	case "button_4":
-
-// 	}
-
-// 	BotApi.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{
-// 		CallbackQueryID: update.CallbackQuery.ID,
-// 		Text:            "Обрабатываю...", // Необязательное всплывающее уведомление
-// 	})
-// }
-
 func (b *Bot) ColorSelectionHandler(ctx context.Context, BotApi *bot.Bot, chatid int64, color string) {
+	switch color {
+	case "black":
+		arr := make([]models.InlineKeyboardButton, 0)
+		for _, t := range entity.UsersArrToColor(b.repo.ReadValues(chatid), color) {
+			arr = append(arr, models.InlineKeyboardButton{Text: t, CallbackData: "button_black"})
+		}
+		fmt.Println(arr)
+
+		kb := models.InlineKeyboardMarkup{
+			InlineKeyboard: [][]models.InlineKeyboardButton{
+				arr,
+			},
+		}
+
+		BotApi.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID:      chatid,
+			Text:        "Выберите какие вещи постирали",
+			ReplyMarkup: kb,
+		})
+	case "white":
+	case "colored":
+	case "All":
+	}
+
 }

@@ -19,7 +19,7 @@ import (
 func main() {
 	//Создаем логи
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelInfo,
+		Level:     slog.LevelInfo.Level(),
 		AddSource: true,
 	}))
 	slog.SetDefault(logger)

@@ -5,11 +5,9 @@ import (
 	"log/slog"
 	"os"
 
-	_ "github.com/mattn/go-sqlite3"
-
 	"github.com/CornWithMint/TelegramBot-Washing/config"
-
 	"github.com/CornWithMint/TelegramBot-Washing/internal/entity"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type SqliteRepo struct {
@@ -69,7 +67,7 @@ func (r *SqliteRepo) ReadValues(id int64) []entity.User {
 	get := `SELECT * FROM Clothes WHERE User_id = ?`
 	rows, err := r.db.Query(get, id)
 	if err != nil {
-		slog.Warn("Не удалось", "warn", err)
+		slog.Warn("Не удалось получить данные из БД", "warn", err)
 	}
 
 	defer rows.Close()
