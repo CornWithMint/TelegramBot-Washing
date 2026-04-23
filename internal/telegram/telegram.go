@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -9,6 +10,7 @@ import (
 	"github.com/CornWithMint/TelegramBot-Washing/config"
 	"github.com/CornWithMint/TelegramBot-Washing/internal/entity"
 	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
 	fsm "github.com/whynot00/go-telegram-fsm"
 )
 
@@ -24,7 +26,7 @@ type Bot struct {
 }
 
 const (
-	stateDefault     fsm.StateFSM = "default"
+	stateDefault     fsm.StateFSM = fsm.StateDefault
 	stateWaitMessage fsm.StateFSM = "wait_message"
 	stateColor       fsm.StateFSM = "wait_color"
 	stateClothes     fsm.StateFSM = "wait_clothes"
@@ -65,4 +67,21 @@ func NewBot(ctx context.Context, cfg *config.Config, repo Repository) (*Bot, err
 
 func (b *Bot) Start(ctx context.Context) {
 	b.api.Start(ctx)
+}
+
+func (b *Bot) MakeButtons(chatid int64, color string) [][]models.InlineKeyboardButton {
+	arr := make([][]models.InlineKeyboardButton, 0)
+
+	values := b.repo.ReadValues(chatid)
+	things := entity.ThingsFromColors(values, color)
+	NumOfThings := len(things)
+
+	if NumOfThings < 6 {
+		for _, t := range things {
+			arr = append(arr, []models.InlineKeyboardButton{{Text: t, CallbackData: "button_black"}})
+		}
+	}
+
+	fmt.Println(arr)
+	return arr
 }

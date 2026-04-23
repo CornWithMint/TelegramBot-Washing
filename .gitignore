@@ -24,3 +24,7 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+*.dockerignore
+DockerFile
+/home/oem/Go-WashingBot/TelegramBot-Washing/internal/database/Clothes.db
