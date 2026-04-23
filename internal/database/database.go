@@ -33,14 +33,17 @@ func NewSqliteRepo(cfg *config.Config) *SqliteRepo {
 func (r *SqliteRepo) CreateTable() {
 	slog.Debug("Запуск функции CreateTable")
 
+	// del := `DROP TABLE IF EXISTS Clothes`
+
 	create := `CREATE TABLE IF NOT EXISTS Clothes (
 		User_id INTEGER NOT NULL,
 		Thing TEXT ,
 		Color TEXT,
 		Number INTEGER,
-		Days  INTEGER,
+		DateOfWashing  TEXT,
 		UNIQUE(Thing, Color, Number)
 	)`
+
 	_, err := r.db.Exec(create)
 	if err != nil {
 		slog.Error("Ошибка создания таблицы", "error", err)
@@ -52,8 +55,8 @@ func (r *SqliteRepo) CreateTable() {
 func (r *SqliteRepo) UpdateTable(u *entity.User, id int64) {
 	slog.Debug("Запуск функции UpdateTable")
 
-	insert := `INSERT INTO Clothes (User_id, Thing, Color, Number) VALUES (?, ?, ?, ?)`
-	_, err := r.db.Exec(insert, id, u.Thing, u.Color, u.Number)
+	insert := `INSERT INTO Clothes (User_id, Thing, Color, Number, DateOfWashing) VALUES (?, ?, ?, ?, ?)`
+	_, err := r.db.Exec(insert, id, u.Thing, u.Color, u.Number, u.DateOfWashing)
 	if err != nil {
 		slog.Warn("Не удалось вставить данные в таблицу", "warn", err)
 	}
@@ -76,12 +79,12 @@ func (r *SqliteRepo) ReadValues(id int64) []entity.User {
 
 	for rows.Next() {
 		var number, id int
-		var thing, color string
-		err = rows.Scan(&id, &thing, &color, &number)
+		var thing, color, DateOfWashing string
+		err = rows.Scan(&id, &thing, &color, &number, &DateOfWashing)
 		if err != nil {
 			slog.Warn("Не удалось прочитать данные", "warn", err)
 		}
-		res = append(res, entity.User{Thing: thing, Color: color, Number: number})
+		res = append(res, entity.User{Thing: thing, Color: color, Number: number, DateOfWashing: DateOfWashing})
 		//fmt.Printf("В БД Вещь: %s, Цвет: %s, Количество: %d\n", thing, color, number)
 	}
 	slog.Debug("Завершение функции ReadValues")
