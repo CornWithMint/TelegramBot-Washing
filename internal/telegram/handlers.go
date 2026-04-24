@@ -153,7 +153,7 @@ func (b *Bot) WashedAnswer(ctx context.Context, api *bot.Bot, update *models.Upd
 		b.ColorSelectionHandler(ctx, api, chatid, "colored")
 	case "button_4":
 		b.ColorSelectionHandler(ctx, api, chatid, "All")
-	case "button_black":
+	default:
 		api.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
 			Text:   "Срок стирки обновлен",

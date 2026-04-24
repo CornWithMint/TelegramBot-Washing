@@ -10,6 +10,7 @@ import (
 
 //Cделать проверку что введеной вещи еще нет в бд
 
+// Переделать с User на Thing или Clothe
 type User struct {
 	Thing         string
 	Color         string

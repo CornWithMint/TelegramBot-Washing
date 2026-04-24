@@ -70,15 +70,27 @@ func (b *Bot) Start(ctx context.Context) {
 }
 
 func (b *Bot) MakeButtons(chatid int64, color string) [][]models.InlineKeyboardButton {
-	arr := make([][]models.InlineKeyboardButton, 0)
 
 	values := b.repo.ReadValues(chatid)
 	things := entity.ThingsFromColors(values, color)
+
 	NumOfThings := len(things)
 
-	if NumOfThings < 6 {
+	numofrows := NumOfThings/3 + NumOfThings%3
+
+	arr := make([][]models.InlineKeyboardButton, numofrows)
+
+	if NumOfThings > 5 {
+		var j = 0
 		for _, t := range things {
-			arr = append(arr, []models.InlineKeyboardButton{{Text: t, CallbackData: "button_black"}})
+			arr[j] = append(arr[j], models.InlineKeyboardButton{Text: t, CallbackData: "buttom" + t})
+			if len(arr[j]) == 3 {
+				j += 1
+			}
+		}
+	} else {
+		for _, t := range things {
+			arr[0] = append(arr[0], models.InlineKeyboardButton{Text: t, CallbackData: "buttom" + t})
 		}
 	}
 
