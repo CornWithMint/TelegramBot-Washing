@@ -168,8 +168,16 @@ func (b *Bot) WashedAnswer(ctx context.Context, api *bot.Bot, update *models.Upd
 
 func (b *Bot) ColorSelectionHandler(ctx context.Context, api *bot.Bot, chatid int64, color string) {
 	slog.Debug("ColorSelectionHandler Начал работу")
+	ArrOfBttons, err := b.MakeButtons(chatid, color)
+
+	if err != "" {
+		api.SendMessage(ctx, &bot.SendMessageParams{
+			ChatID: chatid,
+			Text:   err,
+		})
+	}
 	kb := &models.InlineKeyboardMarkup{
-		InlineKeyboard: b.MakeButtons(chatid, color),
+		InlineKeyboard: ArrOfBttons,
 	}
 
 	api.SendMessage(ctx, &bot.SendMessageParams{

@@ -3,6 +3,7 @@ package entity
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -33,17 +34,24 @@ func UsersArrToString(users []User) string {
 func ThingsFromColors(users []User, color string) []string {
 	res := make([]string, 0)
 	for _, u := range users {
-		if color == "All" {
-			res = append(res, u.Thing)
-		} else if color == "colored" {
+		switch color {
+		case "black":
+			if slices.Contains(Black_colored, u.Color) {
+				res = append(res, u.Thing)
+			}
+		case "white":
+			if slices.Contains(White_colored, u.Color) {
+				res = append(res, u.Thing)
+			}
+		case "colored":
 			if u.Color != "black" && u.Color != "white" {
 				res = append(res, u.Thing)
 			}
-		} else if u.Color == color {
+		case "All":
 			res = append(res, u.Thing)
 		}
-
 	}
+	fmt.Println(res)
 	return res
 }
 

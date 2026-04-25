@@ -2,7 +2,6 @@ package telegram
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -69,18 +68,23 @@ func (b *Bot) Start(ctx context.Context) {
 	b.api.Start(ctx)
 }
 
-func (b *Bot) MakeButtons(chatid int64, color string) [][]models.InlineKeyboardButton {
-
+func (b *Bot) MakeButtons(chatid int64, color string) ([][]models.InlineKeyboardButton, string) {
 	values := b.repo.ReadValues(chatid)
 	things := entity.ThingsFromColors(values, color)
 
 	NumOfThings := len(things)
 
-	numofrows := NumOfThings/3 + NumOfThings%3
-
+	var numofrows int
+	if NumOfThings < 4 {
+		numofrows = NumOfThings
+	} else if NumOfThings%3 == 0 {
+		numofrows = NumOfThings / 3
+	} else {
+		numofrows = NumOfThings/3 + 1
+	}
 	arr := make([][]models.InlineKeyboardButton, numofrows)
 
-	if NumOfThings > 5 {
+	if NumOfThings > 3 {
 		var j = 0
 		for _, t := range things {
 			arr[j] = append(arr[j], models.InlineKeyboardButton{Text: t, CallbackData: "buttom" + t})
@@ -89,11 +93,14 @@ func (b *Bot) MakeButtons(chatid int64, color string) [][]models.InlineKeyboardB
 			}
 		}
 	} else {
-		for _, t := range things {
-			arr[0] = append(arr[0], models.InlineKeyboardButton{Text: t, CallbackData: "buttom" + t})
+		for i, t := range things {
+			arr[i] = append(arr[i], models.InlineKeyboardButton{Text: t, CallbackData: "buttom" + t})
 		}
 	}
 
-	fmt.Println(arr)
-	return arr
+	if len(arr) == 0 {
+		return nil, "Вещей данной катеории не найдено"
+	} else {
+		return arr, ""
+	}
 }
