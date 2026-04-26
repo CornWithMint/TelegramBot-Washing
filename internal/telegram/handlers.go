@@ -53,12 +53,14 @@ func (b *Bot) StartHandler(ctx context.Context, api *bot.Bot, update *models.Upd
 func (b *Bot) GetClothesHandler(ctx context.Context, api *bot.Bot, update *models.Update) {
 
 	chatid := update.Message.Chat.ID
-	NewText := entity.UsersArrToString(b.repo.ReadValues(chatid))
+	NewText := entity.ThingsArrToString(b.repo.ReadValues(chatid))
 
 	api.SendMessage(ctx, &bot.SendMessageParams{
 		ChatID: chatid,
 		Text:   fmt.Sprintf("Вот список вещей: \n %s", NewText),
 	})
+
+	// ЗАЧЕМ ЭТО ??
 	b.repo.ReadValues(chatid)
 }
 
@@ -83,7 +85,7 @@ func (b *Bot) ClothesWaitHandler(ctx context.Context, api *bot.Bot, update *mode
 
 	f := fsm.FromContext(ctx)
 	f.Finish(ctx)
-	clothes, err := entity.StringToUserArr(NewText, chatid)
+	clothes, err := entity.StringToThingArr(NewText, chatid)
 	if err != nil {
 		api.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
@@ -91,7 +93,7 @@ func (b *Bot) ClothesWaitHandler(ctx context.Context, api *bot.Bot, update *mode
 		})
 	} else {
 		for _, clothe := range clothes {
-			b.repo.UpdateTable(&clothe, chatid)
+			b.repo.InsertTable(&clothe, chatid)
 		}
 		api.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
@@ -154,10 +156,13 @@ func (b *Bot) WashedAnswer(ctx context.Context, api *bot.Bot, update *models.Upd
 	case "button_4":
 		b.ColorSelectionHandler(ctx, api, chatid, "All")
 	default:
+		thing, id := entity.WashedUpdate()
+		b.repo.UpdateTable(thing, id)
 		api.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatid,
 			Text:   "Срок стирки обновлен",
 		})
+
 	}
 
 	api.AnswerCallbackQuery(ctx, &bot.AnswerCallbackQueryParams{

@@ -11,8 +11,7 @@ import (
 
 //Cделать проверку что введеной вещи еще нет в бд
 
-// Переделать с User на Thing или Clothe
-type User struct {
+type Thing struct {
 	Thing         string
 	Color         string
 	Number        int
@@ -22,18 +21,18 @@ type User struct {
 var YearNow, MonthNow, DayNow = time.Now().Date()
 var TimeNow = strconv.Itoa(DayNow) + "-" + strconv.Itoa(int(MonthNow)) + "-" + strconv.Itoa(YearNow)
 
-func UsersArrToString(users []User) string {
+func ThingsArrToString(Things []Thing) string {
 	var sb strings.Builder
-	for _, u := range users {
+	for _, u := range Things {
 		sb.WriteString(fmt.Sprintf("%s %s %d шт, Стиралась %s\n", u.Thing, u.Color, u.Number, u.DateOfWashing))
 	}
 	res := sb.String()
 	return res
 }
 
-func ThingsFromColors(users []User, color string) []string {
+func ThingsFromColors(Things []Thing, color string) []string {
 	res := make([]string, 0)
-	for _, u := range users {
+	for _, u := range Things {
 		switch color {
 		case "black":
 			if slices.Contains(Black_colored, u.Color) {
@@ -42,6 +41,7 @@ func ThingsFromColors(users []User, color string) []string {
 		case "white":
 			if slices.Contains(White_colored, u.Color) {
 				res = append(res, u.Thing)
+				fmt.Println(res)
 			}
 		case "colored":
 			if u.Color != "black" && u.Color != "white" {
@@ -55,9 +55,10 @@ func ThingsFromColors(users []User, color string) []string {
 	return res
 }
 
-func StringToUserArr(clothes string, id int64) ([]User, error) {
+// Для AddClothes
+func StringToThingArr(clothes string, id int64) ([]Thing, error) {
 	var res [][]string
-	var things []User
+	var things []Thing
 
 	for _, val := range strings.Split(clothes, ",") {
 		if val == "" || !strings.Contains(val, "-") {
@@ -71,7 +72,7 @@ func StringToUserArr(clothes string, id int64) ([]User, error) {
 	for i := range res {
 		num, _ := strconv.Atoi(res[i][2])
 
-		u := &User{
+		u := &Thing{
 			Thing:         res[i][0],
 			Color:         res[i][1],
 			Number:        num,
@@ -82,4 +83,8 @@ func StringToUserArr(clothes string, id int64) ([]User, error) {
 	}
 
 	return things, nil
+}
+
+func WashedUpdate() (Thing *Thing, id int64) {
+	return nil, 0
 }

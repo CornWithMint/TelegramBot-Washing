@@ -14,9 +14,10 @@ import (
 )
 
 type Repository interface {
-	UpdateTable(u *entity.User, id int64)
-	ReadValues(id int64) []entity.User
-	DeleteValues()
+	InsertTable(u *entity.Thing, id int64)
+	UpdateTable(u *entity.Thing, id int64)
+	ReadValues(id int64) []entity.Thing
+	DeleteValues(u *entity.Thing, id int64)
 }
 
 type Bot struct {
@@ -76,31 +77,32 @@ func (b *Bot) MakeButtons(chatid int64, color string) ([][]models.InlineKeyboard
 
 	var numofrows int
 	if NumOfThings < 4 {
-		numofrows = NumOfThings
+		numofrows = NumOfThings + 1
 	} else if NumOfThings%3 == 0 {
-		numofrows = NumOfThings / 3
-	} else {
 		numofrows = NumOfThings/3 + 1
+	} else {
+		numofrows = NumOfThings/3 + 2
 	}
 	arr := make([][]models.InlineKeyboardButton, numofrows)
 
 	if NumOfThings > 3 {
 		var j = 0
 		for _, t := range things {
-			arr[j] = append(arr[j], models.InlineKeyboardButton{Text: t, CallbackData: "buttom" + t})
+			arr[j] = append(arr[j], models.InlineKeyboardButton{Text: t + "-" + color, CallbackData: "buttom" + t})
 			if len(arr[j]) == 3 {
 				j += 1
 			}
 		}
 	} else {
 		for i, t := range things {
-			arr[i] = append(arr[i], models.InlineKeyboardButton{Text: t, CallbackData: "buttom" + t})
+			arr[i] = append(arr[i], models.InlineKeyboardButton{Text: t + "-" + color, CallbackData: "buttom" + t})
 		}
 	}
 
 	if len(arr) == 0 {
-		return nil, "Вещей данной катеории не найдено"
+		return nil, "Вещей данной категории не найдено"
 	} else {
+		arr[len(arr)-1] = append(arr[len(arr)-1], models.InlineKeyboardButton{Text: "Выбрать", CallbackData: "buttom_selection"})
 		return arr, ""
 	}
 }

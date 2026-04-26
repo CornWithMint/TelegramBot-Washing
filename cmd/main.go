@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -46,11 +47,18 @@ func main() {
 
 	//Запуск БД
 	slog.Info("Загрузка БД")
-	db := database.NewSqliteRepo(cfg)
+	db, err := sql.Open("sqlite3", cfg.BdPath)
+	if err != nil {
+		slog.Error("Ошибка открытия БД", "error", err)
+		os.Exit(1)
+	}
+
+	// Инициализация репозитория БД
+	dbrepo := database.NewSqliteRepo(cfg, db)
 
 	//Запускаем бота
 	slog.Info("Запуск бота")
-	bot, err := telegram.NewBot(ctx, cfg, db)
+	bot, err := telegram.NewBot(ctx, cfg, dbrepo)
 	if err != nil {
 		slog.Error("Ошибка запуска бота", "error", err)
 		os.Exit(1)
